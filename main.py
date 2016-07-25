@@ -59,14 +59,13 @@ class Mine(object):
                 print ''.join(row)
         else:
             if not end:
-                _x = x-1
-                _y = y-1
-                pos = (_x) * _y + _x
-                print 'num length', len(self.numbers)
-                print self.numbers[pos]
-                print self.numbers[pos][2]
+                self.board[y] = list(self.board[y])
+                self.board[y][x] = str(self.numbers[y-1][x-1][2])
+                self.board[y] = ''.join(self.board[y])
             else:
+                self.board[y] = list(self.board[y])
                 self.board[y][x] = self.mine
+                self.board[y] = ''.join(self.board[y])
             for _row in self.board:
                 row = []
                 for r in _row:
@@ -80,7 +79,7 @@ class Mine(object):
                 if raw_input('Play again? y/n') != 'y':
                     exit()
                 else:
-                    #reset here
+                    # reset here
                     pass
 
     def start(self):
@@ -126,7 +125,7 @@ class Mine(object):
             return
         print self.mines
         print self.numbers
-        #print 'Gotcha!' if [x, y] in self.mines else 'Try again!'
+        # print 'Gotcha!' if [x, y] in self.mines else 'Try again!'
         try:
             self.print_board(x, y, [x, y] in self.mines)
         except IndexError:
