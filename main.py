@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Minesweeper
-# Version: 0.3.0
+# Version: 0.4.0
 # Copyright (C) 2016, KeyWeeUsr(Peter Badida) <keyweeusr@gmail.com>
 # License: GNU GPL v3.0
 #
@@ -38,25 +38,56 @@ class Minesweeper(object):
         super(Minesweeper, self).__init__(**kwargs)
 
         # set initial values
-        self.mine = u'¤'
-        self.found_mine = '*'
-        self.padding = 2
-        self.count_mines = 10
-        self.board_x = 20
-        self.board_y = 5
         self.mines = []
-        self.numbers = []
+        self.mine = u'¤'
+        self.empty = ' '
+        self.spacing = 1
+        self.padding = 2
+        self.board_y = 5
         self._board = []
-        self.difficulty = [[9, 9, 10], [16, 16, 40], [32, 16, 99]]
+        self.numbers = []
+        self.board_x = 20
+        self.found_mine = '*'
+        self.count_mines = 10
+        self.difficulty = [[9, 9, 10],
+                           [16, 16, 40],
+                           [32, 16, 99]]
+
+        # set menu layout
         self.main_menu = ['(1) Play Game',
                           '(2) Instructions',
-                          '(3) About',
-                          '(4) Exit Game']
+                          '(3) Options',
+                          '(4) About',
+                          '(5) Exit Game']
+
         self.menu_values = [['(1) Beginner',
                              '(2) Intermediate',
-                             '(3) Expert'],
-                            '<Instructions>',
-                            '<About/Credits>']
+                             '(3) Expert',
+                             '(4) Custom'],
+                            [('1) Select a place in the minefield by typing '
+                              'correct values of X and Y.'),
+                             ('2) Select a mine by typing asterisk(*) after '
+                              'both X and Y coordinates -> e.g. 1* 1*'),
+                             ('3) Exit game either with Ctrl+C or '
+                              'Ctrl+Pause/Break combination.')],
+                            ['Options are set for a single game only:',
+                             '(1) Mine character (default: ' + self.mine + ')',
+                             '(2) Found mine character (default: ' +
+                             self.found_mine + ')',
+                             '(3) Empty place character - zero mines around ' +
+                             '(default: "' + self.empty + '")',
+                             '(4) Padding - from left (default: ' +
+                             str(self.padding) + ')',
+                             '(5) Spacing - between places in minefield ' +
+                             '(default: ' + str(self.spacing) + ')'],
+                            [('This Minesweeper is inspired by the old Win95 '
+                              'game I used to play long ago.'),
+                             ('Even now I play some clone on android once in '
+                              'a while, so...'),
+                             ('I decided to make a text version controlled '
+                              'by a keyboard.'),
+                             (' '*50 + 'Have fun!')],
+                            '']
 
         self.clean()
         self.menu()
@@ -70,27 +101,73 @@ class Minesweeper(object):
 
     def menu(self):
         for m in self.main_menu:
-            print(' '*self.padding+m)
+            print(' '*self.padding + m)
+
         try:
-            select = int(raw_input('\n'+' '*self.padding+'>>> '))
+            select = int(raw_input('\n' + ' '*self.padding + '>>> '))
             self.clean()
-            for v in self.menu_values[select-1]:
-                print(' '*self.padding+v)
-            value = int(raw_input('\n'+' '*self.padding+'>>> '))
+
+            for v in self.menu_values[select - 1]:
+                print(' '*self.padding + v)
+
             if select == 1:
-                self.board_x = self.difficulty[value-1][0]
-                self.board_y = self.difficulty[value-1][1]
-                self.count_mines = self.difficulty[value-1][2]
+                value = int(raw_input('\n' + ' '*self.padding + '>>> '))
+                if value != 4:
+                    self.board_x = self.difficulty[value - 1][0]
+                    self.board_y = self.difficulty[value - 1][1]
+                    self.count_mines = self.difficulty[value - 1][2]
+                else:
+                    x = int(raw_input(' '*self.padding + 'width >>> '))
+                    y = int(raw_input(' '*self.padding + 'height >>> '))
+                    m = int(raw_input(' '*self.padding + '# of mines >>> '))
+                    if x == 1 and y == 1 or m < 1 or x < 1 or y < 1:
+                        raise
+                    self.board_x = x
+                    self.board_y = y
+                    self.count_mines = m
+
+            elif select == 2:
+                raw_input()
+                self.clean()
+                self.menu()
+
+            elif select == 3:
+                option = int(raw_input('\n' + ' '*self.padding + '>>> '))
+                value = raw_input('\n' + ' '*self.padding + '>>> ')
+                if option == 1:
+                    self.mine = value
+                elif option == 2:
+                    self.found_mine = value
+                elif option == 3:
+                    self.empty = value
+                elif option == 4:
+                    self.padding = int(value)
+                elif option == 5:
+                    self.spacing = int(value)
+                raw_input()
+                self.clean()
+                self.menu()
+
+            elif select == 4:
+                raw_input()
+                self.clean()
+                self.menu()
+
+            elif select == 5:
+                exit()
             self.clean()
-        except:
+
+        except Exception:
             self.clean()
             self.menu()
 
     def set_board(self):
-        self._board.append('-'+'-'*self.board_x*2)
-        for i in range(self.board_y):
-            self._board.append('|'+'x'*self.board_x)
-        self._board.append('-'+'-'*self.board_x*2)
+        self._board.append('-' + '-'*self.board_x*2)
+
+        for i in xrange(self.board_y):
+            self._board.append('|' + 'x'*self.board_x)
+
+        self._board.append('-' + '-'*self.board_x*2)
         self.board = self._board[:]
         self.start()
         self.print_board()
@@ -104,8 +181,8 @@ class Minesweeper(object):
         self.nums()
 
     def nums(self):
-        for i in range(1, self.board_y+1):
-            for j in range(1, self.board_x+1):
+        for i in xrange(1, self.board_y+1):
+            for j in xrange(1, self.board_x+1):
                 m = 0
                 if [j-1, i] in self.mines:
                     m += 1
@@ -123,27 +200,29 @@ class Minesweeper(object):
                     m += 1
                 if [j-1, i+1] in self.mines:
                     m += 1
-                self.numbers.append([j, i, m])
+                self.numbers.append([j, i, m])  # oh, hi Jim!
+
         _numbers = []
         for x in xrange(0, len(self.numbers), self.board_x):
-            _numbers.append(self.numbers[x:x+self.board_x])
+            _numbers.append(self.numbers[x:x + self.board_x])
         self.numbers = _numbers[:]
 
     def print_board(self, x=None, y=None, end=False, found=False):
-        print(' '*self.padding+'v Y / X ->')
+        print(' '*self.padding + 'v Y / X ->')
         if not x and not y:
             for _row in self.board:
                 row = []
                 for r in _row:
                     if r != '|' and r != '-':
-                        row.append(r+'|')
+                        row.append(r + ' '*self.spacing +
+                                   '|' + ' '*self.spacing)
                     else:
-                        row.append(r)
+                        row.append(r + ' '*self.spacing)
                 print(' '*self.padding + ''.join(row))
         else:
             if not end:
                 self.board[y] = list(self.board[y])
-                self.board[y][x] = str(self.numbers[y-1][x-1][2])
+                self.board[y][x] = str(self.numbers[y - 1][x - 1][2])
                 self.board[y] = ''.join(self.board[y])
             else:
                 self.board[y] = list(self.board[y])
@@ -156,10 +235,11 @@ class Minesweeper(object):
                 row = []
                 for r in _row:
                     if r != '|' and r != '-':
-                        row.append(r+'|')
+                        row.append(r + ' '*self.spacing +
+                                   '|' + ' '*self.spacing)
                     else:
-                        row.append(r)
-                print(' '*self.padding + ''.join(row))
+                        row.append(r + ' '*self.spacing)
+                print(' '*self.padding + ''.join(row).replace('0', self.empty))
             if end and not found:
                 print('Game Over')
                 if raw_input('Play again? y/n') != 'y':
@@ -172,11 +252,13 @@ class Minesweeper(object):
         x, y = None, None
         found = False
         while not x and not y:
-            x = raw_input(' '*self.padding+'x >>> ')
-            y = raw_input(' '*self.padding+'y >>> ')
+            x = raw_input(' '*self.padding + 'x >>> ')
+            y = raw_input(' '*self.padding + 'y >>> ')
+
             try:
                 x = int(x)
                 y = int(y)
+
             except ValueError:
                 try:
                     if x[-1:] == self.found_mine and y[-1:] == self.found_mine:
@@ -189,14 +271,18 @@ class Minesweeper(object):
 
                 except TypeError:
                     x, y = 0, 0
+
             except TypeError:
                 # if input is strange e.g. 2*2
                 x, y = 0, 0
+
         if x <= 0 or y <= 0:
             print('Only positive numbers!')
             return
+
         self.clean()
         self.reveal(x, y, found)
+        self.check_end()
 
     def reveal(self, x, y, found):
         zeros = [[x, y]]
@@ -204,40 +290,41 @@ class Minesweeper(object):
         # where to look
         # corners
         if x == 1 and y == 1:
-            zeros.extend([[x, y+1], [x+1, y+1], [x+1, y]])
+            zeros.extend([[x, y + 1], [x + 1, y + 1], [x + 1, y]])
         elif x == self.board_x and y == self.board_y:
-            zeros.extend([[x, y-1], [x-1, y-1], [x-1, y]])
+            zeros.extend([[x, y - 1], [x - 1, y - 1], [x - 1, y]])
         elif x == 1 and y == self.board_y:
-            zeros.extend([[x+1, y], [x+1, y-1], [x, y-1]])
+            zeros.extend([[x + 1, y], [x + 1, y - 1], [x, y - 1]])
         elif y == 1 and x == self.board_x:
-            zeros.extend([[x, y+1], [x-1, y], [x-1, y+1]])
+            zeros.extend([[x, y + 1], [x - 1, y], [x - 1, y + 1]])
 
         # edges
         elif x == 1 and y > 1 and y < self.board_y:
-            zeros.extend([[x, y+1], [x+1, y+1], [x+1, y],
-                          [x+1, y-1], [x, y-1]])
+            zeros.extend([[x, y + 1], [x + 1, y + 1], [x + 1, y],
+                          [x + 1, y - 1], [x, y - 1]])
 
         elif y == 1 and x > 1 and x < self.board_x:
-            zeros.extend([[x, y+1], [x+1, y+1], [x+1, y],
-                          [x-1, y], [x-1, y+1]])
+            zeros.extend([[x, y + 1], [x + 1, y + 1], [x + 1, y],
+                          [x - 1, y], [x - 1, y + 1]])
 
         elif x == self.board_x and y > 1 and y < self.board_y:
-            zeros.extend([[x, y+1], [x, y-1], [x-1, y],
-                          [x-1, y-1], [x-1, y+1]])
+            zeros.extend([[x, y + 1], [x, y - 1], [x - 1, y],
+                          [x - 1, y - 1], [x - 1, y + 1]])
 
         elif y == self.board_y and x > 1 and x < self.board_x:
-            zeros.extend([[x+1, y], [x+1, y-1], [x, y-1],
-                          [x-1, y], [x-1, y-1]])
+            zeros.extend([[x + 1, y], [x + 1, y - 1], [x, y - 1],
+                          [x - 1, y], [x - 1, y - 1]])
 
         # core
         elif x > 1 and x < self.board_x and y > 1 and y < self.board_y:
-            zeros.extend([[x, y+1], [x+1, y+1], [x+1, y], [x+1, y-1],
-                          [x, y-1], [x-1, y], [x-1, y-1], [x-1, y+1]])
+            zeros.extend([[x + 1, y + 1], [x, y + 1], [x + 1, y],
+                          [x + 1, y - 1], [x, y - 1], [x - 1, y],
+                          [x - 1, y + 1], [x - 1, y - 1]])
 
         for z in zeros:
             try:
-                if (self.numbers[z[1]-1][z[0]-1][2] == 0 and
-                        self.numbers[z[1]-1][z[0]-1] not in self.mines):
+                if (self.numbers[z[1] - 1][z[0] - 1][2] == 0 and
+                        self.numbers[z[1] - 1][z[0] - 1] not in self.mines):
                     self.clean()
                     self.print_board(z[0], z[1],
                                      [z[0], z[1]] in self.mines, found)
@@ -245,9 +332,19 @@ class Minesweeper(object):
                     self.clean()
                     self.print_board(x, y, [x, y] in self.mines, found)
                     return
+
             except IndexError:
                 self.print_board()
                 print('Out of bounds!')
+
+    def check_end(self):
+        revealed = 0
+        for row in self.board:
+            revealed += row.count(self.found_mine)
+        if len(self.mines) == revealed:
+            print('Congrats! Game Over!')
+            raw_input()
+            self.reset()
 
     def reset(self):
         self.__init__()
