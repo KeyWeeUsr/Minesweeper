@@ -1,4 +1,12 @@
-# Minesweeper
+```
+ _____ _
+|     |_|___ ___ ___ _ _ _ ___ ___ ___ ___ ___
+| | | | |   | -_|_ -| | | | -_| -_| . | -_|  _|
+|_|_|_|_|_|_|___|___|_____|___|___|  _|___|_|
+                                  |_|
+                                      by KeyWeeUsr
+```
+
 
 This Minesweeper is inspired by the old Win95 game I used to play long ago.
 Even now I play some clone on android once in a while, so...
